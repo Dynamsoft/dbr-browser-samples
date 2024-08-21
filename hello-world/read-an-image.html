@@ -19,8 +19,8 @@
       /** LICENSE ALERT - README
        * To use the library, you need to first specify a license key using the API "initLicense()" as shown below.
        */
-
-      Dynamsoft.License.LicenseManager.initLicense("DLS2eyJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSJ9");
+      let license = "DLS2eyJoYW5kc2hha2VDb2RlIjoiMTAyOTc1MDEyLVRYbFhaV0pRY205cSIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21kbHMuZHluYW1zb2Z0b25saW5lLmNvbS8iLCJvcmdhbml6YXRpb25JRCI6IjEwMjk3NTAxMiIsInN0YW5kYnlTZXJ2ZXJVUkwiOiJodHRwczovL3NkbHMuZHluYW1zb2Z0b25saW5lLmNvbS8iLCJjaGVja0NvZGUiOi0xMzA1NTA5MjJ9";
+      Dynamsoft.License.LicenseManager.initLicense(license);
 
       /**
        * You can visit https://www.dynamsoft.com/customer/license/trialLicense?utm_source=samples&product=dbr&package=js to get your own trial license good for 30 days.
@@ -36,7 +36,12 @@
 
       let cvRouter; // an instance of CaptureVisionRouter
       let pCvRouter; // promise of CaptureVisionRouter
-
+      let countBefore;
+      getScanCount(license).then(count => {
+        countBefore = count;
+        console.log(countBefore);
+      });
+      console.log(countBefore);
       document.querySelector("#input-file").addEventListener("change", async function () {
         let files = [...this.files];
         this.value = "";
@@ -58,7 +63,14 @@
               resultsContainer.innerText += item.text + "\n";
               console.log(item.text);
             }
-            if (!result.items.length) resultsContainer.innerText += "No barcode found\n";
+            if (!result.items.length) {
+              resultsContainer.innerText += "No barcode found\n";
+            } else {
+              getScanCount(license).then(count => {
+                countAfter = count;
+                console.log(countAfter);
+              });
+            }
           }
         } catch (ex) {
           let errMsg = ex.message || ex;
@@ -66,6 +78,20 @@
           alert(errMsg);
         }
       });
+
+    async function getScanCount(license = '') {
+      let rep = await fetch('https://mdls.dynamsoftonline.com/license/item/103082778', {
+        headers: {
+          DynamsoftLTSTokenV2: "Qa2yJ41dTIbLLzulwLAwMy8EilpZBTZ8JeLhiZtR/Iavmd7y2hPzgyG282YoBBmva3ywW9QJ7TeCw7q5wkJM9N5j3pjMlDCskW1RDBIyYV0OA24fs5571sKLgw=="
+        },
+        cache: "no-cache"
+      })
+      if(!rep.ok){
+        throw Error("fetch failure!")
+      }
+      let obj = await rep.json();
+      console.log(obj.usedCount);// The scan count
+    }
     </script>
   </body>
 </html>
